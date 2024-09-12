@@ -121,7 +121,14 @@ class Draft(commands.Cog):
                 else:
                     await draft_channel.send(f"GM role for {team_name} not found.")
             else:
-                await draft_channel.send(f"The draft is over. Thank you all for participating!")
+                # When draft is over, send the draft results to staff channel
+                staff_channel = self.bot.get_channel(config.transaction_bot_channel)
+                if staff_channel:
+                    picks_message = ""
+                    for team, players in self.picks.items():
+                        picks_message += f"{team}: {', '.join(players)}"
+                    await staff_channel.send(f"The draft has concluded. Here are the final picks:\n{picks_message}")
+                await draft_channel.send(f"United Rogue's League of Legends Season {LOL_season} Draft has concluded. Thank you all for participating!")
             await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Show picks to this this point in the draft")
