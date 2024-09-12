@@ -50,19 +50,33 @@ class Draft(commands.Cog):
     @commands.slash_command(guild_ids=[config.lol_server], description="Make your pick.")
     async def draft_pick(self, ctx, player_name: Option(discord.Member)):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
+        
         if draft_channel:
-            team_name, gm_id = await self.get_next_pick()
+            # Announce the current team making the pick (do not move to next pick yet)
+            current_team_code = self.draft_order[self.current_pick - 1]  # Fetch current team (previous pick)
+            current_team_info = dbinfo.team_collection.find_one({"team_code": current_team_code})
 
-            if team_name and gm_id:
-                gm_role = ctx.guild.get_role(gm_id)
-                if gm_role:
-                    await draft_channel.send(f"{gm_role} selected {player_name.mention}.")
-                    await draft_channel.send(f"{gm_role.mention} ({team_name}), you're on the clock!")
-                else:
-                    await draft_channel.send(f"{team_name}'s GM role not found.")
+        if current_team_info:
+            current_gm_role = ctx.guild.get_role(current_team_info["gm_id"])
+            if current_gm_role:
+                await draft_channel.send(f"{current_gm_role.mention} ({current_team_info['team_name']}) selected {player_name.mention}.")
             else:
-                await draft_channel.send(f"The draft is over. Thank you all for participating!")
-            await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
+                await draft_channel.send(f"GM role for {current_team_info['team_name']} not found.")
+        else:
+            await draft_channel.send("Could not find current team information.")
 
+        # Now get the next pick (increment after announcing current team)
+        next_team_name, next_gm_id = await self.get_next_pick()
+
+        if next_team_name and next_gm_id:
+            next_gm_role = ctx.guild.get_role(next_gm_id)
+            if next_gm_role:
+                await draft_channel.send(f"{next_gm_role.mention} ({next_team_name}), you're on the clock!")
+            else:
+                await draft_channel.send(f"GM role for {next_team_name} not found.")
+        else:
+            await draft_channel.send(f"The draft is over. Thank you all for participating!")
+        
+        await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
 def setup(bot):
     bot.add_cog(Draft(bot))
