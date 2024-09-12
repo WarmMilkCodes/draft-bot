@@ -1,7 +1,9 @@
-import discord
+import discord, logging
 from discord.ext import commands
 import app.config as config
 import app.dbinfo as dbinfo
+
+logger = logging.getLogger(__name__)
 
 class Draft(commands.Cog):
     def __init__(self, bot):
