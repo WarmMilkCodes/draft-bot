@@ -48,7 +48,6 @@ class Draft(commands.Cog):
             await ctx.respond("Draft channel not found.", ephemeral=True)
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Make your pick.")
-    @commands.slash
     async def draft_pick(self, ctx, player_name: Option(discord.Member)):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         if draft_channel:
