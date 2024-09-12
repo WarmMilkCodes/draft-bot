@@ -5,6 +5,8 @@ import app.dbinfo as dbinfo
 
 logger = logging.getLogger(__name__)
 
+LOL_season = "1"
+
 class Draft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -16,7 +18,8 @@ class Draft(commands.Cog):
     async def start_draft(self, ctx):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         if draft_channel:
-            await draft_channel.send("Draft is starting...")
+            await draft_channel.send(f"The United Rogue League of Legends draft for season {LOL_season} is starting...")
+            await ctx.respond("Draft Notification Sent.", ephemeral=True)
         else:
             await ctx.respond("Draft channel not found.", ephemeral=True)
 
