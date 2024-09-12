@@ -19,3 +19,5 @@ transaction_bot_channel = 1264833838916567090
 transactions_channel = 1171263861987475482
 bot_report_channel = 1171263860716601368
 bot_testing_channel = 1171263860716601367
+
+draft_channel = 1283920401143042129
