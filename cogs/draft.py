@@ -15,6 +15,7 @@ class Draft(commands.Cog):
         self.current_pick = 0
         self.draft_order = []
         self.draft_rounds = []
+        self.picks = {}
 
     def generate_snake_order(self, initial_order):
         rounds = []
@@ -33,6 +34,9 @@ class Draft(commands.Cog):
         initial_order = [team.strip() for team in draft_order.split(", ")]
         self.draft_order = initial_order
         self.draft_rounds = self.generate_snake_order(initial_order)
+
+        # Initalize picks dictionary
+        self.picks = {team: [] for team in initial_order}
 
         # Build response message with round-by-round breakdown
         draft_response = ""
@@ -91,6 +95,9 @@ class Draft(commands.Cog):
                 gm_role = ctx.guild.get_role(gm_id)
                 if gm_role:
                     await draft_channel.send(f"{gm_role.mention} ({team_name}) selected {player_name.mention}.")
+
+                    # Store the pick in the picks dictionary
+                    self.picks[team_name].append(player_name.display_name)
                 else:
                     await draft_channel.send(f"GM role for {team_name} not found.")
 
@@ -107,6 +114,15 @@ class Draft(commands.Cog):
             else:
                 await draft_channel.send(f"The draft is over. Thank you all for participating!")
             await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
+
+    @commands.slash_command(guild_ids=[config.lol_server], description="Show picks to this this point in the draft")
+    @commands.has_role("Bot Guy")
+    async def show_picks(self, ctx):
+        picks_message = ""
+        for team, players in self.picks.items():
+            picks_message += f"{team}: {', '.join(players)}\n"
+        await ctx.respond(f"Draft Picks so far:\n{picks_message}", ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(Draft(bot))
