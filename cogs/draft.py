@@ -34,7 +34,13 @@ class Draft(commands.Cog):
         self.draft_order = initial_order
         self.draft_rounds = self.generate_snake_order(initial_order)
 
-        await ctx.respond(f"Draft order set for {TOTAL_ROUNDS} rounds with snake draft: {', '.join(self.draft_rounds)}", ephemeral=True)
+        # Build response message with round-by-round breakdown
+        draft_response = ""
+        for round_num in range(TOTAL_ROUNDS):
+            round_teams = self.draft_rounds[round_num * len(initial_order):(round_num + 1) * len(initial_order)]
+            draft_response += f"Round {round_num + 1}: {', '.join(round_teams)}\n"
+
+        await ctx.respond(f"Draft order set for {TOTAL_ROUNDS} rounds with snake draft:\n{draft_response}")
 
     async def get_next_pick(self):
         if self.current_pick < len(self.draft_order):
