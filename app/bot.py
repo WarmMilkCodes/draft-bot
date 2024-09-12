@@ -11,7 +11,7 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 @bot.event
 async def on_ready():
     logger.info(f"Logged in as {bot.user}")
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="UR LoL"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="UR LOL Draft"))
 
 
 # Load all cogs
