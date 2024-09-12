@@ -1,5 +1,9 @@
 import discord, os, asyncio
 from discord.ext import commands
+from app.utils.logging_config import setup_logging
+from config import DISCORD_TOKEN
+
+logger = setup_logging()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='?', intents=intents)
@@ -12,20 +16,20 @@ async def on_ready():
 
 # Load all cogs
 def load_extensions():
-    print("Loading cogs...")
+    logger.info("Loading cogs...")
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
             try:
                 bot.load_extension(f'cogs.{filename[:-3]}')
-                print(f'Successfully loaded cogs.{filename[:-3]}')
+                logger.info(f'Successfully loaded cogs.{filename[:-3]}')
             except Exception as e:
-                print(f'Error loading cogs.{filename[:-3]}: {e}')
+                logger.error(f'Error loading cogs.{filename[:-3]}: {e}')
 
 
 async def main():
     async with bot:
         load_extensions()
-        await bot.start(config.DISCORD_TOKEN)
+        await bot.start(DISCORD_TOKEN)
 
 
 if __name__ == "__main__":
