@@ -35,7 +35,7 @@ class Draft(commands.Cog):
         return False
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Sets the draft order for the snake draft")
-    @commands.has_role("Bot Guy")
+    @commands.has_any_role("Bot Guy", "League Ops")
     async def set_draft_order(self, ctx, draft_order: Option(str, "Comma-separated team codes for the draft order")):
         initial_order = [team.strip() for team in draft_order.split(", ")]
         self.draft_order = initial_order
@@ -63,7 +63,7 @@ class Draft(commands.Cog):
         return None, None
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Starts the draft")
-    @commands.has_role("Bot Guy")
+    @commands.has_any_role("Bot Guy", "League Ops")
     async def start_draft(self, ctx):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
 
@@ -92,6 +92,14 @@ class Draft(commands.Cog):
     @commands.slash_command(guild_ids=[config.lol_server], description="Make your pick.")
     async def draft_pick(self, ctx, player_name: Option(discord.Member)):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
+
+        # Get team and GM that is on the clock
+        team_code, gm_id = await self.get_next_pick()
+
+        # Restrict the command to only the GM on the clock
+        if ctx.author.id != gm_id:
+            await ctx.respond("You are not the GM on the clock!", ephemeral=True)
+            return
 
         if draft_channel:
             # Check if the player has already been picked
