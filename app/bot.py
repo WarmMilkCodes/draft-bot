@@ -1,6 +1,6 @@
 import discord, os, asyncio
 from discord.ext import commands
-from app.utils.logging_config import setup_logging
+from utils.logging_config import setup_logging
 from config import DISCORD_TOKEN
 
 logger = setup_logging()
