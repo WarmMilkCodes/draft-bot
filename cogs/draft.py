@@ -56,6 +56,12 @@ class Draft(commands.Cog):
     @commands.has_role("Bot Guy")
     async def start_draft(self, ctx):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
+
+        # Ensure draft order has been set
+        if not self.draft_rounds:
+            await ctx.respond("Draft order is not set. Please run the following command to set the draft order: '/set_draft_order'", ephemeral=True)
+            return
+        
         if draft_channel:
             await draft_channel.send(f"The United Rogue League of Legends draft for Season {LOL_season} is starting...")
             team_name, gm_id = await self.get_next_pick()
@@ -77,11 +83,6 @@ class Draft(commands.Cog):
     async def draft_pick(self, ctx, player_name: Option(discord.Member)):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         
-        # Ensure draft order has been set
-        if not self.draft_rounds:
-            await ctx.respond("Draft order is not set. Please run the following command to set the draft order: '/set_draft_order'", ephemeral=True)
-            return
-
         if draft_channel:
             # Announce the current pick (before incrementing the pick)
             team_name, gm_id = await self.get_next_pick()
