@@ -43,9 +43,8 @@ class Draft(commands.Cog):
         await ctx.respond(f"Draft order set for {TOTAL_ROUNDS} rounds with snake draft:\n{draft_response}")
 
     async def get_next_pick(self):
-        if self.current_pick < len(self.draft_order):
-            team_code = self.draft_order[self.current_pick]
-            self.current_pick += 1
+        if self.current_pick < len(self.draft_rounds):
+            team_code = self.draft_rounds[self.current_pick]
             team_info = dbinfo.team_collection.find_one({"team_code": team_code})
 
             if team_info:
@@ -79,18 +78,31 @@ class Draft(commands.Cog):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         
         if draft_channel:
-            team_name, gm_id = await self.get_next_pick()
+            # Announce the current pick (before incrementing the pick)
+            team_name, gm_id = await self.get_current_pick()
 
             if team_name and gm_id:
                 gm_role = ctx.guild.get_role(gm_id)
                 if gm_role:
-                    await draft_channel.send(f"{gm_role} selected {player_name.mention}.")
+                    await draft_channel.send(f"{gm_role.mention} ({team_name}) selected {player_name.mention}.")
+                else:
+                    await draft_channel.send(f"GM role for {team_name} not found.")
+
+            # Move to the next pick only after announcing the current pick
+            self.current_pick += 1
+            team_name, gm_id = await self.get_current_pick()
+
+            if team_name and gm_id:
+                gm_role = ctx.guild.get_role(gm_id)
+                if gm_role:
                     await draft_channel.send(f"{gm_role.mention} ({team_name}), you're on the clock!")
                 else:
-                    await draft_channel.send(f"{team_name}'s GM role not found.")
+                    await draft_channel.send(f"GM role for {team_name} not found.")
             else:
                 await draft_channel.send(f"The draft is over. Thank you all for participating!")
             await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
+
+
 
 def setup(bot):
     bot.add_cog(Draft(bot))
