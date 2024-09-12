@@ -10,7 +10,7 @@ class Draft(commands.Cog):
         self.draft_order = []
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Starts the draft")
-    @commands.has_permissions(administrator=True)
+    @commands.has_role("Bot Guy")
     async def start_draft(self, ctx):
         draft_channel = discord.utils.get(config.bot_testing_channel)
         if draft_channel:
