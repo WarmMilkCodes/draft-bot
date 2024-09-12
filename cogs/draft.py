@@ -58,7 +58,7 @@ class Draft(commands.Cog):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         if draft_channel:
             await draft_channel.send(f"The United Rogue League of Legends draft for Season {LOL_season} is starting...")
-            team_name, gm_id= await self.get_next_pick()
+            team_name, gm_id = await self.get_next_pick()
 
             if team_name and gm_id:
                 gm_role = ctx.guild.get_role(gm_id)
@@ -79,7 +79,7 @@ class Draft(commands.Cog):
         
         if draft_channel:
             # Announce the current pick (before incrementing the pick)
-            team_name, gm_id = await self.get_current_pick()
+            team_name, gm_id = await self.get_next_pick()
 
             if team_name and gm_id:
                 gm_role = ctx.guild.get_role(gm_id)
@@ -90,7 +90,7 @@ class Draft(commands.Cog):
 
             # Move to the next pick only after announcing the current pick
             self.current_pick += 1
-            team_name, gm_id = await self.get_current_pick()
+            team_name, gm_id = await self.get_next_pick()
 
             if team_name and gm_id:
                 gm_role = ctx.guild.get_role(gm_id)
@@ -101,8 +101,6 @@ class Draft(commands.Cog):
             else:
                 await draft_channel.send(f"The draft is over. Thank you all for participating!")
             await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
-
-
 
 def setup(bot):
     bot.add_cog(Draft(bot))
