@@ -41,7 +41,7 @@ class Draft(commands.Cog):
         self.draft_order = initial_order
         self.draft_rounds = self.generate_snake_order(initial_order)
 
-        # Initalize picks dictionary
+        # Initialize picks dictionary
         self.picks = {team: [] for team in initial_order}
 
         # Build response message with round-by-round breakdown
@@ -94,8 +94,10 @@ class Draft(commands.Cog):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         
         if draft_channel:
+            # Check if the player has already been picked
             if self.player_already_picked(player_name.display_name):
                 await ctx.respond(f"{player_name.display_name} has already been drafted. Please choose another player.", ephemeral=True)
+                return  # Exit if player is already picked
             
             # Announce the current pick (before incrementing the pick)
             team_name, gm_id = await self.get_next_pick()
@@ -126,7 +128,7 @@ class Draft(commands.Cog):
                 if staff_channel:
                     picks_message = ""
                     for team, players in self.picks.items():
-                        picks_message += f"{team}: {', '.join(players)}"
+                        picks_message += f"{team}: {', '.join(players)}\n"  # Added newline for formatting
                     await staff_channel.send(f"The draft has concluded. Here are the final picks:\n{picks_message}")
                 await draft_channel.send(f"United Rogue's League of Legends Season {LOL_season} Draft has concluded. Thank you all for participating!")
             await ctx.respond(f"Player {player_name} picked.", ephemeral=True)
