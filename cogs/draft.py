@@ -28,6 +28,12 @@ class Draft(commands.Cog):
                 rounds.append(initial_order[::-1])
         return [team for round_order in rounds for team in round_order]
     
+    def player_already_picked(self, player_name):
+        for players in self.picks.values():
+            if player_name in players:
+                return True
+        return False
+
     @commands.slash_command(guild_ids=[config.lol_server], description="Sets the draft order for the snake draft")
     @commands.has_role("Bot Guy")
     async def set_draft_order(self, ctx, draft_order: Option(str, "Comma-separated team codes for the draft order")):
@@ -88,6 +94,9 @@ class Draft(commands.Cog):
         draft_channel = self.bot.get_channel(config.bot_testing_channel)
         
         if draft_channel:
+            if self.player_already_picked(player_name.display_name):
+                await ctx.respond(f"{player_name.display_name} has already been drafted. Please choose another player.", ephemeral=True)
+            
             # Announce the current pick (before incrementing the pick)
             team_name, gm_id = await self.get_next_pick()
 
