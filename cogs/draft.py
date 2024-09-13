@@ -65,7 +65,7 @@ class Draft(commands.Cog):
     @commands.slash_command(guild_ids=[config.lol_server], description="Starts the draft")
     @commands.has_any_role("Bot Guy", "League Ops")
     async def start_draft(self, ctx):
-        draft_channel = self.bot.get_channel(config.bot_testing_channel)
+        draft_channel = self.bot.get_channel(config.draft_channel)
 
         # Ensure draft order has been set
         if not self.draft_rounds:
@@ -91,7 +91,7 @@ class Draft(commands.Cog):
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Make your pick.")
     async def draft_pick(self, ctx, player_name: Option(discord.Member)):
-        draft_channel = self.bot.get_channel(config.bot_testing_channel)
+        draft_channel = self.bot.get_channel(config.draft_channel)
 
         # Get team and GM that is on the clock
         team_code, gm_id = await self.get_next_pick()
