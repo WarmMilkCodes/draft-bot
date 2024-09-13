@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 LOL_season = "1"
 TOTAL_ROUNDS = 6
+SALARY_CAP = 600
 
 class Draft(commands.Cog):
     def __init__(self, bot):
@@ -16,6 +17,7 @@ class Draft(commands.Cog):
         self.draft_order = []
         self.draft_rounds = []
         self.picks = {}
+        self.salary_caps = {}
 
     def generate_snake_order(self, initial_order):
         rounds = []
@@ -33,6 +35,12 @@ class Draft(commands.Cog):
             if player_name in players:
                 return True
         return False
+    
+    async def get_player_salary(self, player_name):
+        player_info = dbinfo.player_collection.find_one({"discord_id": player_name.id})
+        if player_info:
+            return player_info.get("salary": 0)
+        return 0
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Sets the draft order for the snake draft")
     @commands.has_any_role("Bot Guy", "League Ops")
@@ -118,6 +126,14 @@ class Draft(commands.Cog):
         if spectator_role in player_name.roles:
             await ctx.respond(f"{player_name.display_name} cannot be drafted as they are a 'Spectator'.", ephemeral=True)
             return
+        
+        # Fetch player's salary
+        player_salary = await self.get_player_salary(player_name)
+
+        # Check if team's remaining salary can can afford player
+        if self.salary_caps[team_code] < player_salary:
+            await ctx.respond(f"{player_name.display_name}'s salary of ${player_salary} exceeds your remaining cap of ${self.salary_caps[team_code]}.", ephemeral=True)
+            return
 
         if draft_channel:
             # Check if the player has already been picked
@@ -131,6 +147,12 @@ class Draft(commands.Cog):
 
                 # Store the pick in the picks dictionary using team_code (e.g., SDA)
                 self.picks[team_code].append(player_name.display_name)
+
+                # Deduct player's salary from team's remaining cap
+                self.salary_caps[team_code] -= player_salary
+
+                # Notify GM of their remaining cap
+                await draft_channel.send(f"{gm_role.mention}, your remaining cap is ${self.salary_caps[team_code]}.")
 
             # Move to the next pick only after announcing the current pick
             self.current_pick += 1
