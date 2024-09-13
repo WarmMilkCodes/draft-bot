@@ -102,6 +102,22 @@ class Draft(commands.Cog):
         if gm_role not in ctx.author.roles:
             await ctx.respond("You are not the GM on the clock!", ephemeral=True)
             return
+        
+        # Check if the player has "Not Eligible" or "Spectator" role
+        not_eligible_role = discord.utils.get(ctx.guild.roles, name="Not Eligible")
+        spectator_role = discord.utils.get(ctx.guild.roles, name="Spectator")
+
+        if player_name.bot:
+            await ctx.respond(f"{player_name.display_name} cannot be drafted, because they're a bot...", ephemeral=True)
+            return
+        
+        if not_eligible_role in player_name.roles:
+            await ctx.respond(f"{player_name.display_name} cannot be drafted as they are not eligible.", ephemeral=True)
+            return
+
+        if spectator_role in player_name.roles:
+            await ctx.respond(f"{player_name.display_name} cannot be drafted as they are a 'Spectator'.", ephemeral=True)
+            return
 
         if draft_channel:
             # Check if the player has already been picked
