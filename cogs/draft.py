@@ -39,7 +39,7 @@ class Draft(commands.Cog):
     async def get_player_salary(self, player_name):
         player_info = dbinfo.player_collection.find_one({"discord_id": player_name.id})
         if player_info:
-            return player_info.get("salary": 0)
+            return player_info.get("salary", 0)
         return 0
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Sets the draft order for the snake draft")
