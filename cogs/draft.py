@@ -156,6 +156,15 @@ class Draft(commands.Cog):
 
             # Move to the next pick only after announcing the current pick
             self.current_pick += 1
+
+            # Calculate the current round
+            teams_per_round = len(self.draft_order)
+            current_round = (self.current_pick // teams_per_round) + 1
+
+            # Check if round has changed
+            if self.current_pick % teams_per_round == 0:
+                await draft_channel.send(f"**Round {current_round} has begun!**")
+
             next_team_code, next_gm_id = await self.get_next_pick()
 
             if next_team_code and next_gm_id:
@@ -178,11 +187,12 @@ class Draft(commands.Cog):
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Show picks to this this point in the draft")
     @commands.has_role("Bot Guy")
-    async def show_picks(self, ctx):
+    async def draft_history(self, ctx):
         picks_message = ""
         for team, players in self.picks.items():
             picks_message += f"{team}: {', '.join(players)}\n"
-        await ctx.respond(f"Draft Picks so far:\n{picks_message}", ephemeral=True)
+        await ctx.respond(f"Draft History:\n{picks_message}", ephemeral=True)
+
 
 
 def setup(bot):
