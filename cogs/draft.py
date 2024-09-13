@@ -55,11 +55,12 @@ class Draft(commands.Cog):
     async def get_next_pick(self):
         if self.current_pick < len(self.draft_rounds):
             team_code = self.draft_rounds[self.current_pick]
+            # Fetch the team info from the database using the team_code
             team_info = dbinfo.team_collection.find_one({"team_code": team_code})
 
             if team_info:
-                gm_id = team_info.get("gm_id")
-                return team_code, gm_id  # Return team_code to maintain consistency
+                gm_role_id = team_info.get("gm_id")  # Ensure this is the GM role ID
+                return team_code, gm_role_id  # Return team_code and gm_role_id
         return None, None
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Starts the draft")
@@ -94,10 +95,11 @@ class Draft(commands.Cog):
         draft_channel = self.bot.get_channel(config.draft_channel)
 
         # Get team and GM that is on the clock
-        team_code, gm_id = await self.get_next_pick()
+        team_code, gm_role_id = await self.get_next_pick()
 
         # Restrict the command to only the GM on the clock
-        if ctx.author.id != gm_id:
+        gm_role = ctx.guild.get_role(gm_role_id)
+        if gm_role not in ctx.author.roles:
             await ctx.respond("You are not the GM on the clock!", ephemeral=True)
             return
 
@@ -108,17 +110,11 @@ class Draft(commands.Cog):
                 return  # Exit if player is already picked
 
             # Announce the current pick (before incrementing the pick)
-            team_code, gm_id = await self.get_next_pick()
+            if team_code and gm_role_id:
+                await draft_channel.send(f"{gm_role.mention} ({team_code}) selected {player_name.mention}.")
 
-            if team_code and gm_id:
-                gm_role = ctx.guild.get_role(gm_id)
-                if gm_role:
-                    await draft_channel.send(f"{gm_role.mention} ({team_code}) selected {player_name.mention}.")
-
-                    # Store the pick in the picks dictionary using team_code (e.g., SDA)
-                    self.picks[team_code].append(player_name.display_name)
-                else:
-                    await draft_channel.send(f"GM role for {team_code} not found.")
+                # Store the pick in the picks dictionary using team_code (e.g., SDA)
+                self.picks[team_code].append(player_name.display_name)
 
             # Move to the next pick only after announcing the current pick
             self.current_pick += 1
@@ -139,6 +135,7 @@ class Draft(commands.Cog):
                         picks_message += f"{team}: {', '.join(players)}\n"  # Added newline for formatting
                     await staff_channel.send(f"The draft has concluded. Here are the final picks:\n{picks_message}")
                 await draft_channel.send(f"United Rogue's League of Legends Season {LOL_season} Draft has concluded. Thank you all for participating!")
+
             await ctx.respond(f"Player {player_name} picked for {team_code}.", ephemeral=True)
 
     @commands.slash_command(guild_ids=[config.lol_server], description="Show picks to this this point in the draft")
