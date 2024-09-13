@@ -194,6 +194,14 @@ class Draft(commands.Cog):
         await ctx.respond(f"Draft History:\n{picks_message}", ephemeral=True)
 
 
+    @commands.slash_command(guild_ids=[config.lol_server], description="Show the draft leaderboard")
+    async def draft_leaderboard(self, ctx):
+        leaderboard = sorted(self.picks.items(), key=lambda x:len(x[1]), reverse=True)
+        leaderboard_message = "Draft Leaderboard:\n"
+        for team, players in leaderboard:
+            total_salary = SALARY_CAP - self.salary_caps[team]
+            leaderboard_message += f"{team}: {len(players)} players, ${total_salary} spent\n"
+        await ctx.respond(leaderboard_message)
 
 def setup(bot):
     bot.add_cog(Draft(bot))
